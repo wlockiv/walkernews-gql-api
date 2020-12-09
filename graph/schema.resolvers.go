@@ -6,31 +6,39 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/wlockiv/walkernews/internal/tables"
 
+	"github.com/satori/go.uuid"
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
+	"github.com/wlockiv/walkernews/internal/tables"
 )
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	panic(fmt.Errorf("not implemented"))
+	table := tables.GetLinksTable()
+	var err error
+
+	newLink := &model.Link{
+		ID:      uuid.NewV4().String(),
+		Title:   input.Title,
+		Address: input.Address,
+		User:    &model.User{Username: "walker"},
+	}
+
+	fmt.Println(table, newLink)
+
+	return newLink, err
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
 	table := tables.GetUserTable()
 
-	newUser := &model.User{
-		ID:       input.Username,
-		Username: input.Username,
-	}
-
-	if err := table.Put(newUser); err != nil {
+	if newUser, err := table.Put(input.Username, input.Password); err != nil {
 		fmt.Println("There was a problem creating the user: ")
 		fmt.Println(err.Error())
 		return nil, err
+	} else {
+		return &model.User{ID: newUser.ID, Username: newUser.Username}, nil
 	}
-
-	return newUser, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {

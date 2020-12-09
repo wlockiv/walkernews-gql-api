@@ -8,15 +8,16 @@ import (
 	"github.com/wlockiv/walkernews/internal/services"
 )
 
-type UserTable struct {
+type LinksTable struct {
 	tableName string
 	dynamodb  *dynamodb.DynamoDB
 }
 
-func (ut *UserTable) Put(user *model.User) (err error) {
-	av, err := dynamodbattribute.Marshal(user)
+// TODO: Make it so that this table takes all required fields as args?
+func (ut *LinksTable) Put(link *model.Link) (err error) {
+	av, err := dynamodbattribute.Marshal(link)
 	if err != nil {
-		fmt.Println("There was a problem marshalling a user: ", err)
+		fmt.Println("There was a problem marshalling a link: ", err)
 		return err
 	}
 
@@ -26,16 +27,16 @@ func (ut *UserTable) Put(user *model.User) (err error) {
 	}
 
 	if _, err := ut.dynamodb.PutItem(dynamoInput); err != nil {
-		fmt.Println("There was a problem putting a user to the table: ", err)
+		fmt.Println("There was a problem putting a link to the table: ", err)
 		return err
 	}
 
 	return nil
 }
 
-func GetUserTable() *UserTable {
-	table := UserTable{
-		tableName: "walkernews-users",
+func GetLinksTable() *LinksTable {
+	table := LinksTable{
+		tableName: "walkernews-links",
 		dynamodb:  services.NewDynamoService(),
 	}
 
