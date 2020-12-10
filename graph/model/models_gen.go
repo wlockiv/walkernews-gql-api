@@ -21,8 +21,3 @@ type NewUser struct {
 type RefreshToken struct {
 	Token string `json:"token"`
 }
-
-type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-}

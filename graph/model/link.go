@@ -5,9 +5,9 @@ import (
 )
 
 type Link struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Address   string    `json:"address"`
-	CreatedAt time.Time `json:"createdAt"`
-	UserID    string    `json:"user"`
+	ID        string    `json:"id" dynamo:"id"`
+	Title     string    `json:"title" dynamo:"title"`
+	Address   string    `json:"address" dynamo:"address"`
+	CreatedAt time.Time `json:"createdAt" dynamo:"createdAt"`
+	UserID    string    `json:"user" dynamo:"user"`
 }

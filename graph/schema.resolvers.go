@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/controllers"
@@ -13,7 +12,10 @@ import (
 )
 
 func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, error) {
-	table := controllers.GetUserTable()
+	table, err := controllers.GetUserTable()
+	if err != nil {
+		return nil, err
+	}
 
 	user, err := table.GetById(obj.UserID)
 	if err != nil {
@@ -24,7 +26,11 @@ func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, 
 }
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	table := controllers.GetLinksTable()
+	table, err := controllers.GetLinksTable()
+	if err != nil {
+		return nil, err
+	}
+
 	newLink, err := table.Create(input)
 	if err != nil {
 		return nil, err
@@ -34,19 +40,37 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	table := controllers.GetUserTable()
-
-	if newUser, err := table.Create(input); err != nil {
-		fmt.Println("There was a problem creating the user: ")
-		fmt.Println(err.Error())
+	table, err := controllers.GetUserTable()
+	if err != nil {
 		return nil, err
-	} else {
-		return &model.User{ID: newUser.ID, Username: newUser.Username}, nil
 	}
+
+	user, err := table.Create(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+
+	/*
+		table := controllers.GetUserTable()
+
+		if newUser, err := table.Create(input); err != nil {
+			fmt.Println("There was a problem creating the user: ")
+			fmt.Println(err.Error())
+			return nil, err
+		} else {
+			return &model.User{ID: newUser.ID, Username: newUser.Username}, nil
+		}
+	*/
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	table := controllers.GetUserTable()
+	table, err := controllers.GetUserTable()
+	if err != nil {
+		return "", err
+	}
+
 	userId, err := table.Authenticate(input.Username, input.Password)
 	if err != nil {
 		return "", err
@@ -61,7 +85,11 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
-	table := controllers.GetLinksTable()
+	table, err := controllers.GetLinksTable()
+	if err != nil {
+		return nil, err
+	}
+
 	links, err := table.GetAll()
 	if err != nil {
 		return nil, err
@@ -71,7 +99,11 @@ func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
 }
 
 func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error) {
-	table := controllers.GetLinksTable()
+	table, err := controllers.GetLinksTable()
+	if err != nil {
+		return nil, err
+	}
+
 	link, err := table.GetById(id)
 	if err != nil {
 		return nil, err
