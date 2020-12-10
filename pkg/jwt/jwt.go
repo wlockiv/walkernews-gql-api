@@ -10,7 +10,7 @@ var (
 	SecretKey = []byte("secret")
 )
 
-func NewToken(id, username string) (string, error) {
+func GenerateToken(id string) (string, error) {
 	token := jwt.New(jwt.SigningMethodES256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["userId"] = id
