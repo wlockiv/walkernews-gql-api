@@ -1,12 +1,14 @@
 package main
 
 import (
+	"github.com/wlockiv/walkernews/internal/auth"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi"
 	"github.com/wlockiv/walkernews/graph"
 	"github.com/wlockiv/walkernews/graph/generated"
 )
@@ -19,11 +21,16 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	router := chi.NewRouter()
+	router.Use(auth.Middleware())
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	router.Handle("/", playground.Handler("GraphQL Playground", "/query"))
+	router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+
+	if err := http.ListenAndServe(":"+port, router); err != nil {
+		panic(err)
+	}
 }

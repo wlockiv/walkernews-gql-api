@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	uuid "github.com/satori/go.uuid"
+	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/services"
 	util2 "github.com/wlockiv/walkernews/pkg/util"
 	"strings"
@@ -22,18 +23,17 @@ type User struct {
 	Password string `json:"password"`
 }
 
-// TODO: Should this be taking UN & Password directly?
-func (ut *UserTable) Put(username, password string) (*User, error) {
+func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
 	userId := uuid.NewV4().String()
 
-	hashedPassword, err := util2.HashPassword(password)
+	hashedPassword, err := util2.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
 	newUser := &User{
 		ID:       userId,
-		Username: username,
+		Username: input.Username,
 		Password: hashedPassword,
 	}
 
@@ -55,7 +55,8 @@ func (ut *UserTable) Put(username, password string) (*User, error) {
 	}
 
 	// For the username hash (enforcing uniqueness)
-	if usernameHashAV, err := dynamodbattribute.Marshal(map[string]string{"id": "username#" + username}); err != nil {
+	enforcementValue := map[string]string{"id": "username#" + strings.ToLower(input.Username)}
+	if usernameHashAV, err := dynamodbattribute.Marshal(enforcementValue); err != nil {
 		return nil, err
 	} else {
 		transactWriteItem := &dynamodb.TransactWriteItem{
@@ -73,14 +74,40 @@ func (ut *UserTable) Put(username, password string) (*User, error) {
 
 	if _, err := ut.dynamodb.TransactWriteItems(transactWriteItemsInput); err != nil {
 		if strings.Contains(err.Error(), "ConditionalCheckFail") {
-			return nil, errors.New(`the requested username, '` + username + `', has already been claimed`)
+			return nil, errors.New(`the requested username, '` + input.Username + `', has already been claimed`)
 		}
 
 		return nil, err
 	} else {
-		return &User{ID: userId, Username: username}, nil
+		return &model.User{ID: userId, Username: input.Username}, nil
+	}
+}
+
+// Untested - this may not work
+func (ut *UserTable) GetById(userId string) (*model.User, error) {
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: &ut.tableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: &userId},
+		},
 	}
 
+	result, err := ut.dynamodb.GetItem(getItemInput)
+	if err != nil {
+		return nil, err
+	}
+	if result.Item == nil {
+		return nil, errors.New("the user could not be found")
+	}
+
+	user := model.User{}
+
+	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func GetUserTable() *UserTable {
