@@ -83,7 +83,6 @@ func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
 	}
 }
 
-// Untested - this may not work
 func (ut *UserTable) GetById(userId string) (*model.User, error) {
 	getItemInput := &dynamodb.GetItemInput{
 		TableName: &ut.tableName,
@@ -97,11 +96,10 @@ func (ut *UserTable) GetById(userId string) (*model.User, error) {
 		return nil, err
 	}
 	if result.Item == nil {
-		return nil, errors.New("the user could not be found")
+		return nil, NotFoundError
 	}
 
 	user := model.User{}
-
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
 	if err != nil {
 		return nil, err

@@ -2,7 +2,6 @@ package graph
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
-//go:generate go run github.com/99designs/gqlgen
 
 import (
 	"context"
@@ -51,7 +50,23 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
-	panic(fmt.Errorf("not implemented"))
+	table := tables.GetLinksTable()
+	links, err := table.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return links, nil
+}
+
+func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error) {
+	table := tables.GetLinksTable()
+	link, err := table.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return link, err
 }
 
 // Link returns generated.LinkResolver implementation.

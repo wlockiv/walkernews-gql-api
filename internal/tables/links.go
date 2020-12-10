@@ -1,12 +1,14 @@
 package tables
 
 import (
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	uuid "github.com/satori/go.uuid"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/services"
+	"time"
 )
 
 type LinksTable struct {
@@ -21,13 +23,13 @@ type Link struct {
 	UserId  string `json:"userId"`
 }
 
-// TODO: Make it so that this table takes all required fields as args?
-func (ut *LinksTable) Create(input *model.NewLink) (*model.Link, error) {
+func (lt *LinksTable) Create(input model.NewLink) (*model.Link, error) {
 	link := &model.Link{
-		ID:      uuid.NewV4().String(),
-		Title:   input.Title,
-		Address: input.Address,
-		UserID:  input.UserID,
+		ID:        uuid.NewV4().String(),
+		Title:     input.Title,
+		Address:   input.Address,
+		UserID:    input.UserID,
+		CreatedAt: time.Now().UTC(),
 	}
 
 	av, err := dynamodbattribute.Marshal(link)
@@ -38,15 +40,63 @@ func (ut *LinksTable) Create(input *model.NewLink) (*model.Link, error) {
 
 	dynamoInput := &dynamodb.PutItemInput{
 		Item:      av.M,
-		TableName: &ut.tableName,
+		TableName: &lt.tableName,
 	}
 
-	if _, err := ut.dynamodb.PutItem(dynamoInput); err != nil {
+	if _, err := lt.dynamodb.PutItem(dynamoInput); err != nil {
 		fmt.Println("There was a problem putting a link to the table: ", err)
 		return nil, err
 	}
 
 	return link, nil
+}
+
+func (lt *LinksTable) GetById(linkId string) (*model.Link, error) {
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: &lt.tableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: &linkId},
+		},
+	}
+
+	result, err := lt.dynamodb.GetItem(getItemInput)
+	if err != nil {
+		return nil, err
+	}
+	if result.Item == nil {
+		return nil, NotFoundError
+	}
+
+	link := model.Link{}
+	err = dynamodbattribute.UnmarshalMap(result.Item, &link)
+	if err != nil {
+		return nil, err
+	}
+
+	return &link, nil
+}
+
+func (lt *LinksTable) GetAll() ([]*model.Link, error) {
+
+	scanInput := &dynamodb.ScanInput{
+		TableName: &lt.tableName,
+	}
+
+	result, err := lt.dynamodb.Scan(scanInput)
+	if err != nil {
+		return nil, err
+	}
+	if result.Items == nil {
+		return nil, errors.New("the user could not be found")
+	}
+
+	var links []*model.Link
+	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &links)
+	if err != nil {
+		return nil, err
+	}
+
+	return links, nil
 }
 
 func GetLinksTable() *LinksTable {
