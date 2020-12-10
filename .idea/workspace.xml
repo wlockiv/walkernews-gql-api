@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="6e2fd0b1-e8d7-4fc4-a847-83c80305dfda" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graph/schema.resolvers.go" beforeDir="false" afterPath="$PROJECT_DIR$/graph/schema.resolvers.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/auth/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/auth/middleware.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/tables/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/controllers/errors.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/tables/links.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/controllers/links.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/tables/users.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/controllers/users.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/jwt/jwt.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/jwt/jwt.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
