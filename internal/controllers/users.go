@@ -1,4 +1,4 @@
-package tables
+package controllers
 
 import (
 	"errors"
@@ -8,7 +8,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/services"
-	util2 "github.com/wlockiv/walkernews/pkg/util"
+	"github.com/wlockiv/walkernews/pkg/util"
+	"log"
 	"strings"
 )
 
@@ -26,13 +27,13 @@ type User struct {
 func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
 	userId := uuid.NewV4().String()
 
-	hashedPassword, err := util2.HashPassword(input.Password)
+	hashedPassword, err := util.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
 	newUser := &User{
-		ID:       userId,
+		ID:       strings.ToLower(input.Username),
 		Username: input.Username,
 		Password: hashedPassword,
 	}
@@ -48,22 +49,6 @@ func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
 				TableName:           &ut.tableName,
 				ConditionExpression: aws.String("attribute_not_exists(id)"),
 				Item:                newUserAV.M,
-			},
-		}
-
-		transactWriteItems = append(transactWriteItems, transactWriteItem)
-	}
-
-	// For the username hash (enforcing uniqueness)
-	enforcementValue := map[string]string{"id": "username#" + strings.ToLower(input.Username)}
-	if usernameHashAV, err := dynamodbattribute.Marshal(enforcementValue); err != nil {
-		return nil, err
-	} else {
-		transactWriteItem := &dynamodb.TransactWriteItem{
-			Put: &dynamodb.Put{
-				TableName:           &ut.tableName,
-				ConditionExpression: aws.String("attribute_not_exists(id)"),
-				Item:                usernameHashAV.M,
 			},
 		}
 
@@ -106,6 +91,38 @@ func (ut *UserTable) GetById(userId string) (*model.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (ut *UserTable) Authenticate(username, password string) (userId string, err error) {
+	id := strings.ToLower(username)
+	input := dynamodb.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: &id},
+		},
+		TableName: &ut.tableName,
+	}
+
+	result, err := ut.dynamodb.GetItem(&input)
+	if err != nil {
+		return "", err
+	}
+	if result.Item == nil {
+		log.Println("the username was not found")
+		return "", WrongUsernameOrPasswordError
+	}
+
+	user := &User{}
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &user); err != nil {
+		return "", err
+	}
+
+	correct := util.CheckPasswordHash(password, user.Password)
+	if !correct {
+		log.Println("the password was incorrect")
+		return "", WrongUsernameOrPasswordError
+	}
+
+	return user.ID, nil
 }
 
 func GetUserTable() *UserTable {

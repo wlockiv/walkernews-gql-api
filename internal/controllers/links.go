@@ -1,4 +1,4 @@
-package tables
+package controllers
 
 import (
 	"errors"

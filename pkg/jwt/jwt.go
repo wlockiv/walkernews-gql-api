@@ -11,7 +11,7 @@ var (
 )
 
 func GenerateToken(id string) (string, error) {
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["userId"] = id
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()

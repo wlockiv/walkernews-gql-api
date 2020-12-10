@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"github.com/wlockiv/walkernews/internal/tables"
+	"github.com/wlockiv/walkernews/internal/controllers"
 	"github.com/wlockiv/walkernews/pkg/jwt"
 	"net/http"
 )
@@ -33,14 +33,14 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 
 			//	create user and check if user exists
-			users := tables.GetUserTable()
+			users := controllers.GetUserTable()
 			result, err := users.GetById(userId)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
 
-			user := &tables.User{
+			user := &controllers.User{
 				ID:       userId,
 				Username: result.Username,
 			}

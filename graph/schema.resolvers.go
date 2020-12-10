@@ -6,14 +6,14 @@ package graph
 import (
 	"context"
 	"fmt"
-
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
-	"github.com/wlockiv/walkernews/internal/tables"
+	"github.com/wlockiv/walkernews/internal/controllers"
+	"github.com/wlockiv/walkernews/pkg/jwt"
 )
 
 func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, error) {
-	table := tables.GetUserTable()
+	table := controllers.GetUserTable()
 
 	user, err := table.GetById(obj.UserID)
 	if err != nil {
@@ -24,7 +24,7 @@ func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, 
 }
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	table := tables.GetLinksTable()
+	table := controllers.GetLinksTable()
 	newLink, err := table.Create(input)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	table := tables.GetUserTable()
+	table := controllers.GetUserTable()
 
 	if newUser, err := table.Create(input); err != nil {
 		fmt.Println("There was a problem creating the user: ")
@@ -46,11 +46,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	table := controllers.GetUserTable()
+	userId, err := table.Authenticate(input.Username, input.Password)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := jwt.GenerateToken(userId)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
-	table := tables.GetLinksTable()
+	table := controllers.GetLinksTable()
 	links, err := table.GetAll()
 	if err != nil {
 		return nil, err
@@ -60,7 +71,7 @@ func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
 }
 
 func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error) {
-	table := tables.GetLinksTable()
+	table := controllers.GetLinksTable()
 	link, err := table.GetById(id)
 	if err != nil {
 		return nil, err
