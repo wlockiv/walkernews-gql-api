@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type LinksTable struct {
+type LinksController struct {
 	table *dynamo.Table
 }
 
-func (lt *LinksTable) Create(input model.NewLink) (*model.Link, error) {
+func (c *LinksController) Create(input model.NewLink) (*model.Link, error) {
 	newLink := &model.Link{
 		ID:        uuid.NewV4().String(),
 		Title:     input.Title,
@@ -20,25 +20,25 @@ func (lt *LinksTable) Create(input model.NewLink) (*model.Link, error) {
 		CreatedAt: time.Now().UTC(),
 	}
 
-	if err := lt.table.Put(newLink).Run(); err != nil {
+	if err := c.table.Put(newLink).Run(); err != nil {
 		return nil, err
 	}
 
 	return newLink, nil
 }
 
-func (lt *LinksTable) GetById(linkId string) (*model.Link, error) {
+func (c *LinksController) GetById(linkId string) (*model.Link, error) {
 	var result *model.Link
-	if err := lt.table.Get("id", linkId).One(&result); err != nil {
+	if err := c.table.Get("id", linkId).One(&result); err != nil {
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (lt *LinksTable) GetAll() ([]*model.Link, error) {
+func (c *LinksController) GetAll() ([]*model.Link, error) {
 	var results []*model.Link
-	if err := lt.table.Scan().All(&results); err != nil {
+	if err := c.table.Scan().All(&results); err != nil {
 		return nil, err
 	}
 
@@ -46,13 +46,13 @@ func (lt *LinksTable) GetAll() ([]*model.Link, error) {
 
 }
 
-func GetLinksTable() (*LinksTable, error) {
+func GetLinksTable() (*LinksController, error) {
 	dynamodbTable, err := New("walkernews-links")
 	if err != nil {
 		return nil, err
 	}
 
-	table := LinksTable{
+	table := LinksController{
 		table: dynamodbTable,
 	}
 

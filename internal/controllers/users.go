@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type UserTable struct {
+type UsersController struct {
 	table *dynamo.Table
 }
 
@@ -17,7 +17,7 @@ type User struct {
 	Password string `json:"password" dynamo:"password"`
 }
 
-func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
+func (c *UsersController) Create(input model.NewUser) (*model.User, error) {
 	hashedPassword, err := util.HashPassword(input.Password)
 	userId := strings.ToLower(input.Username)
 	if err != nil {
@@ -30,17 +30,16 @@ func (ut *UserTable) Create(input model.NewUser) (*model.User, error) {
 		Password: hashedPassword,
 	}
 
-	if err := ut.table.Put(newUser).If("attribute_not_exists(id)").Run(); err != nil {
+	if err := c.table.Put(newUser).If("attribute_not_exists(id)").Run(); err != nil {
 		return nil, err
 	}
 
 	return &model.User{ID: userId, Username: input.Username}, nil
-
 }
 
-func (ut *UserTable) GetById(userId string) (*model.User, error) {
+func (c *UsersController) GetById(userId string) (*model.User, error) {
 	var result *model.User
-	if err := ut.table.Get("id", userId).One(&result); err != nil {
+	if err := c.table.Get("id", userId).One(&result); err != nil {
 		return nil, err
 	}
 
@@ -48,12 +47,11 @@ func (ut *UserTable) GetById(userId string) (*model.User, error) {
 
 }
 
-
-func (ut *UserTable) Authenticate(username, password string) (userId string, err error) {
+func (c *UsersController) Authenticate(username, password string) (userId string, err error) {
 	id := strings.ToLower(username)
 
 	var result *User
-	if err := ut.table.Get("ID", id).One(&result); err != nil {
+	if err := c.table.Get("ID", id).One(&result); err != nil {
 		return "", nil
 	}
 
@@ -65,13 +63,13 @@ func (ut *UserTable) Authenticate(username, password string) (userId string, err
 	return result.ID, nil
 }
 
-func GetUserTable() (*UserTable, error) {
+func GetUserTable() (*UsersController, error) {
 	dynamodbTable, err := New("walkernews-users")
 	if err != nil {
 		return nil, err
 	}
 
-	table := UserTable{
+	table := UsersController{
 		table: dynamodbTable,
 	}
 

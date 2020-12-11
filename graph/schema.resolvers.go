@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/controllers"
@@ -51,18 +52,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	}
 
 	return user, nil
-
-	/*
-		table := controllers.GetUserTable()
-
-		if newUser, err := table.Create(input); err != nil {
-			fmt.Println("There was a problem creating the user: ")
-			fmt.Println(err.Error())
-			return nil, err
-		} else {
-			return &model.User{ID: newUser.ID, Username: newUser.Username}, nil
-		}
-	*/
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {

@@ -266,7 +266,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `type Link {
+	{Name: "graph/schema.graphql", Input: `type Link {
     id: ID!
     title: String!
     address: String!
@@ -281,7 +281,7 @@ type User {
 
 type Query {
     links: [Link!]!
-    link(id: String!): Link!
+    link(id: ID!): Link!
 }
 
 input NewLink {
@@ -384,7 +384,7 @@ func (ec *executionContext) field_Query_link_args(ctx context.Context, rawArgs m
 	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
