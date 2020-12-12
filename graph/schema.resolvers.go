@@ -5,81 +5,73 @@ package graph
 
 import (
 	"context"
-
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
-	"github.com/wlockiv/walkernews/internal/controllers"
-	"github.com/wlockiv/walkernews/pkg/jwt"
 )
 
 func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, error) {
-	table, err := controllers.GetUserTable()
+	var user model.User
+	res, err := user.GetById(obj.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := table.GetById(obj.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return res, nil
 }
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	table, err := controllers.GetLinksTable()
-	if err != nil {
+	link := model.NewLinkModel(input.Title, input.Address, input.UserID)
+
+	if err := link.Save(); err != nil {
 		return nil, err
 	}
 
-	newLink, err := table.Create(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return newLink, nil
+	return link, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	table, err := controllers.GetUserTable()
-	if err != nil {
+	user := model.User{
+		Email:    input.Email,
+		Username: input.Username,
+	}
+
+	if err := user.Save(input.Password); err != nil {
 		return nil, err
 	}
 
-	user, err := table.Create(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return &user, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	table, err := controllers.GetUserTable()
+	var user model.User
+	token, err := user.GetToken(input.Email, input.Password)
 	if err != nil {
-		return "", err
-	}
-
-	userId, err := table.Authenticate(input.Username, input.Password)
-	if err != nil {
-		return "", err
-	}
-
-	token, err := jwt.GenerateToken(userId)
-	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	return token, nil
+
+	//table, err := controllers.GetUserTable()
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//userId, err := table.Authenticate(input.Email, input.Password)
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//token, err := jwt.GenerateToken(userId)
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//return token, nil
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
-	table, err := controllers.GetLinksTable()
-	if err != nil {
-		return nil, err
-	}
-
-	links, err := table.GetAll()
+	var link model.Link
+	links, err := link.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -88,17 +80,12 @@ func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
 }
 
 func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error) {
-	table, err := controllers.GetLinksTable()
-	if err != nil {
+	var link model.Link
+	if err := link.GetById(id); err != nil {
 		return nil, err
 	}
 
-	link, err := table.GetById(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return link, err
+	return &link, nil
 }
 
 // Link returns generated.LinkResolver implementation.

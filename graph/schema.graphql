@@ -9,6 +9,7 @@ type Link {
 type User {
     id: ID!
     username: String!
+    email: String!
 }
 
 type Query {
@@ -28,11 +29,12 @@ input RefreshToken {
 
 input NewUser {
     username: String!
+    email: String!
     password: String!
 }
 
 input Login {
-    username: String!
+    email: String!
     password: String!
 }
 

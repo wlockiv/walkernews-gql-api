@@ -17,26 +17,6 @@ type User struct {
 	Password string `json:"password" dynamo:"password"`
 }
 
-func (c *UsersController) Create(input model.NewUser) (*model.User, error) {
-	hashedPassword, err := util.HashPassword(input.Password)
-	userId := strings.ToLower(input.Username)
-	if err != nil {
-		return nil, err
-	}
-
-	newUser := &User{
-		ID:       userId,
-		Username: input.Username,
-		Password: hashedPassword,
-	}
-
-	if err := c.table.Put(newUser).If("attribute_not_exists(id)").Run(); err != nil {
-		return nil, err
-	}
-
-	return &model.User{ID: userId, Username: input.Username}, nil
-}
-
 func (c *UsersController) GetById(userId string) (*model.User, error) {
 	var result *model.User
 	if err := c.table.Get("id", userId).One(&result); err != nil {
