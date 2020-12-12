@@ -23,7 +23,7 @@ func (l *Link) incorporate(link Link) {
 }
 
 func (l *Link) Save() error {
-	client := f.NewFaunaClient(os.Getenv("FDB_ADMIN_KEY"))
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(f.Create(
 		f.Collection("Link"), f.Obj{
 			"data": f.Obj{
@@ -51,7 +51,7 @@ func (l *Link) Save() error {
 }
 
 func (l *Link) GetById(id string) error {
-	client := f.NewFaunaClient(os.Getenv("FDB_ADMIN_KEY"))
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
 		f.Get(
 			f.MatchTerm(f.Index("link_by_id"), id),
@@ -72,7 +72,7 @@ func (l *Link) GetById(id string) error {
 }
 
 func (l *Link) GetAll() ([]*Link, error) {
-	client := f.NewFaunaClient(os.Getenv("FDB_ADMIN_KEY"))
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
 		f.Map(
 			f.Paginate(f.Match(f.Index("links_sorted_by_createdAt_desc"))),

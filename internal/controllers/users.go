@@ -3,8 +3,6 @@ package controllers
 import (
 	"github.com/guregu/dynamo"
 	"github.com/wlockiv/walkernews/graph/model"
-	"github.com/wlockiv/walkernews/pkg/util"
-	"strings"
 )
 
 type UsersController struct {
@@ -25,22 +23,6 @@ func (c *UsersController) GetById(userId string) (*model.User, error) {
 
 	return result, nil
 
-}
-
-func (c *UsersController) Authenticate(username, password string) (userId string, err error) {
-	id := strings.ToLower(username)
-
-	var result *User
-	if err := c.table.Get("ID", id).One(&result); err != nil {
-		return "", nil
-	}
-
-	passwordCorrect := util.CheckPasswordHash(password, result.Password)
-	if !passwordCorrect {
-		return "", WrongUsernameOrPasswordError
-	}
-
-	return result.ID, nil
 }
 
 func GetUserTable() (*UsersController, error) {

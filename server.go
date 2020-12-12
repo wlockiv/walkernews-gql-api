@@ -16,6 +16,10 @@ import (
 
 const defaultPort = "8080"
 
+// TODO: Add delete/update for links (w/ permissions)
+// TODO: Integrate JWT flow w/ Fauna
+// TODO: Delete the Users controller
+// TODO: Remove DynamoDB dependencies
 func main() {
 	err := godotenv.Load()
 	if err != nil {
