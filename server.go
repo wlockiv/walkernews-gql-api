@@ -16,8 +16,11 @@ import (
 
 const defaultPort = "8080"
 
-// TODO: Add delete/update for links (w/ permissions)
+// TODO: Add permissions for Create
 // TODO: Integrate JWT flow w/ Fauna
+// TODO: Add delete/update for links
+// TODO: Update, Deleting Links
+// TODO: Add permissions for Updating account
 // TODO: Delete the Users controller
 // TODO: Remove DynamoDB dependencies
 func main() {
