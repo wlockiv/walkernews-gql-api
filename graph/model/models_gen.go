@@ -10,7 +10,6 @@ type Login struct {
 type NewLink struct {
 	Title   string `json:"title"`
 	Address string `json:"address"`
-	UserID  string `json:"userId"`
 }
 
 type NewUser struct {

@@ -20,7 +20,7 @@ type Query {
 input NewLink {
     title: String!
     address: String!
-    userId: String!
+#    userId: String! <- This is provided by jwt now
 }
 
 input RefreshToken {

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"os"
 )
@@ -60,7 +59,26 @@ func (u *User) GetById(id string) (*User, error) {
 	return &user, nil
 }
 
-func (u *User) GetToken(email, password string) (string, error) {
+func (u *User) GetByEmail(email string) (*User, error) {
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
+	res, err := client.Query(
+		f.Get(
+			f.MatchTerm(f.Index("users_by_email"), email),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (u *User) GetUserKey(email, password string) (string, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 
 	res, err := client.Query(
@@ -70,7 +88,6 @@ func (u *User) GetToken(email, password string) (string, error) {
 		),
 	)
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 

@@ -22,8 +22,8 @@ func (l *Link) incorporate(link Link) {
 	l.UserID = link.UserID
 }
 
-func (l *Link) Save() error {
-	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
+func (l *Link) Save(userKey string) error {
+	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(f.Create(
 		f.Collection("Link"), f.Obj{
 			"data": f.Obj{

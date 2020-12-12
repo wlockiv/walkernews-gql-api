@@ -5,8 +5,12 @@ package graph
 
 import (
 	"context"
+	"errors"
+
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
+	"github.com/wlockiv/walkernews/internal/auth"
+	"github.com/wlockiv/walkernews/pkg/jwt"
 )
 
 func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, error) {
@@ -20,9 +24,13 @@ func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, 
 }
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	link := model.NewLinkModel(input.Title, input.Address, input.UserID)
+	authCtx := auth.ForContext(ctx)
+	if authCtx.UserKey == "" {
+		return nil, errors.New("not authorized")
+	}
 
-	if err := link.Save(); err != nil {
+	link := model.NewLinkModel(input.Title, input.Address, authCtx.User.ID)
+	if err := link.Save(authCtx.UserKey); err != nil {
 		return nil, err
 	}
 
@@ -43,30 +51,23 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	var user model.User
-	token, err := user.GetToken(input.Email, input.Password)
+	var userModel model.User
+	userKey, err := userModel.GetUserKey(input.Email, input.Password)
+	if err != nil {
+		return "", nil
+	}
+
+	user, err := userModel.GetByEmail(input.Email)
+	if err != nil {
+		return "", nil
+	}
+
+	token, err := jwt.GenerateToken(user, userKey)
 	if err != nil {
 		return "", nil
 	}
 
 	return token, nil
-
-	//table, err := controllers.GetUserTable()
-	//if err != nil {
-	//	return "", err
-	//}
-	//
-	//userId, err := table.Authenticate(input.Email, input.Password)
-	//if err != nil {
-	//	return "", err
-	//}
-	//
-	//token, err := jwt.GenerateToken(userId)
-	//if err != nil {
-	//	return "", err
-	//}
-	//
-	//return token, nil
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {

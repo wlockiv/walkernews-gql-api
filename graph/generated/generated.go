@@ -296,7 +296,7 @@ type Query {
 input NewLink {
     title: String!
     address: String!
-    userId: String!
+#    userId: String! <- This is provided by jwt now
 }
 
 input RefreshToken {
@@ -2126,14 +2126,6 @@ func (ec *executionContext) unmarshalInputNewLink(ctx context.Context, obj inter
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
 			it.Address, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "userId":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-			it.UserID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
