@@ -6,9 +6,9 @@ import (
 )
 
 type User struct {
-	ID       string `dynamo:"id" fauna:"id"`
-	Email    string `dynamo:"email" fauna:"email"`
-	Username string `dynamo:"username" fauna:"username"`
+	ID       string `fauna:"id"`
+	Email    string `fauna:"email"`
+	Username string `fauna:"username"`
 }
 
 func (u *User) Save(password string) error {
