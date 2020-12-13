@@ -17,7 +17,6 @@ import (
 const defaultPort = "8080"
 
 // TODO: Add update for links
-// TODO: Configure db permissions to only allow deleting of user's own links
 // TODO: Add permissions for Updating account
 func main() {
 	err := godotenv.Load()

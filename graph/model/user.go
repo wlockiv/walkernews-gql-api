@@ -95,7 +95,6 @@ func (u *User) GetByEmail(email string) (*User, error) {
 
 func (u *User) GetUserKey(email, password string) (string, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
-
 	res, err := client.Query(
 		f.Login(
 			f.MatchTerm(f.Index("users_by_email"), email),
@@ -112,4 +111,19 @@ func (u *User) GetUserKey(email, password string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (u *User) GetCurrent(userKey string) (*User, error) {
+	client := f.NewFaunaClient(userKey)
+	res, err := client.Query(f.Get(f.Identity()))
+	if err != nil {
+		return nil, err
+	}
+
+	var user *User
+	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

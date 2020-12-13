@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"errors"
-
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/auth"
@@ -98,6 +97,16 @@ func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error
 	}
 
 	return &link, nil
+}
+
+func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
+	authCtx := auth.ForContext(ctx)
+	var userModel model.User
+	if user, err := userModel.GetCurrent(authCtx.UserKey); err != nil {
+		return nil, err
+	} else {
+		return user, nil
+	}
 }
 
 // Link returns generated.LinkResolver implementation.

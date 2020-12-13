@@ -61,8 +61,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Link  func(childComplexity int, id string) int
-		Links func(childComplexity int) int
+		CurrentUser func(childComplexity int) int
+		Link        func(childComplexity int, id string) int
+		Links       func(childComplexity int) int
 	}
 
 	User struct {
@@ -84,6 +85,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Links(ctx context.Context) ([]*model.Link, error)
 	Link(ctx context.Context, id string) (*model.Link, error)
+	CurrentUser(ctx context.Context) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -183,6 +185,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
+
+	case "Query.currentUser":
+		if e.complexity.Query.CurrentUser == nil {
+			break
+		}
+
+		return e.complexity.Query.CurrentUser(childComplexity), true
 
 	case "Query.link":
 		if e.complexity.Query.Link == nil {
@@ -305,6 +314,7 @@ type User {
 type Query {
     links: [Link!]!
     link(id: ID!): Link!
+    currentUser: User!
 }
 
 input NewLink {
@@ -886,6 +896,41 @@ func (ec *executionContext) _Query_link(ctx context.Context, field graphql.Colle
 	res := resTmp.(*model.Link)
 	fc.Result = res
 	return ec.marshalNLink2ᚖgithubᚗcomᚋwlockivᚋwalkernewsᚋgraphᚋmodelᚐLink(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_currentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CurrentUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋwlockivᚋwalkernewsᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2408,6 +2453,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_link(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "currentUser":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_currentUser(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

@@ -15,6 +15,7 @@ type User {
 type Query {
     links: [Link!]!
     link(id: ID!): Link!
+    currentUser: User!
 }
 
 input NewLink {
