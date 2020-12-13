@@ -14,14 +14,6 @@ type Link struct {
 	UserID    string    `fauna:"userId"`
 }
 
-func (l *Link) incorporate(link Link) {
-	l.ID = link.ID
-	l.Title = link.Title
-	l.Address = link.Address
-	l.CreatedAt = link.CreatedAt
-	l.UserID = link.UserID
-}
-
 func (l *Link) Save(userKey string) error {
 	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(f.Create(
@@ -66,7 +58,11 @@ func (l *Link) GetById(id string) error {
 		return err
 	}
 
-	l.incorporate(link)
+	l.ID = link.ID
+	l.Title = link.Title
+	l.Address = link.Address
+	l.CreatedAt = link.CreatedAt
+	l.UserID = link.UserID
 
 	return nil
 }
@@ -91,6 +87,21 @@ func (l *Link) GetAll() ([]*Link, error) {
 	return links, nil
 }
 
+func (l *Link) DeleteById(id, userKey string) error {
+	client := f.NewFaunaClient(userKey)
+	_, err := client.Query(
+		f.Map(
+			f.Paginate(f.MatchTerm("link_ref_by_id", id)),
+			f.Lambda("LINK_REF", f.Delete(f.Var("LINK_REF"))),
+		),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewLinkModel(title, address, userId string) *Link {
 	link := Link{
 		ID:        f.NewId().String(),
@@ -102,3 +113,15 @@ func NewLinkModel(title, address, userId string) *Link {
 
 	return &link
 }
+
+//Obj{
+//"data": Arr{
+//Obj{"ref": RefV{ID: "284747993637193222", Collection: &RefV{ID: "Link", Collection: &RefV{ID: "collections"}}},
+//"ts": 1607815698190000,
+//"data": Obj{
+//"createdAt": TimeV("2020-12-12T23:28:18.091775Z"),
+//"id": "284747993637192198",
+//"title": "Google",
+//"userId": "284682068516930048",
+//"address": "google.com"
+//}}}}

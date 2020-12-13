@@ -37,6 +37,17 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	return link, nil
 }
 
+func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (string, error) {
+	authCtx := auth.ForContext(ctx)
+	var linkModel model.Link
+	err := linkModel.DeleteById(id, authCtx.UserKey)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
 	user := model.User{
 		Email:    input.Email,

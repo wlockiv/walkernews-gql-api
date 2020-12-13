@@ -20,7 +20,7 @@ type Query {
 input NewLink {
     title: String!
     address: String!
-#    userId: String! <- This is provided by jwt now
+    #    userId: String! <- This is provided by jwt now
 }
 
 input RefreshToken {
@@ -40,6 +40,7 @@ input Login {
 
 type Mutation {
     createLink(input: NewLink!): Link!
+    deleteLink(id: String!): ID!
     createUser(input: NewUser!): User!
     login(input: Login!): String!
 }
