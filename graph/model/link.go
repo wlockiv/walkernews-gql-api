@@ -113,15 +113,3 @@ func NewLinkModel(title, address, userId string) *Link {
 
 	return &link
 }
-
-//Obj{
-//"data": Arr{
-//Obj{"ref": RefV{ID: "284747993637193222", Collection: &RefV{ID: "Link", Collection: &RefV{ID: "collections"}}},
-//"ts": 1607815698190000,
-//"data": Obj{
-//"createdAt": TimeV("2020-12-12T23:28:18.091775Z"),
-//"id": "284747993637192198",
-//"title": "Google",
-//"userId": "284682068516930048",
-//"address": "google.com"
-//}}}}
