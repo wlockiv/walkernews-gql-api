@@ -15,7 +15,7 @@ import (
 
 func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, error) {
 	var user model.User
-	res, err := user.GetById(obj.UserID)
+	res, err := user.GetByRefV(obj.User)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 		return nil, errors.New("not authorized")
 	}
 
-	link := model.NewLinkModel(input.Title, input.Address, authCtx.User.ID)
+	link := model.NewLinkModel(input.Title, input.Address)
 	if err := link.Save(authCtx.UserKey); err != nil {
 		return nil, err
 	}

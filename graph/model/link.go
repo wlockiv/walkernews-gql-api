@@ -11,7 +11,7 @@ type Link struct {
 	Title     string    `fauna:"title"`
 	Address   string    `fauna:"address"`
 	CreatedAt time.Time `fauna:"createdAt"`
-	UserID    string    `fauna:"userId"`
+	User      f.RefV    `fauna:"user"`
 }
 
 func (l *Link) Save(userKey string) error {
@@ -22,7 +22,7 @@ func (l *Link) Save(userKey string) error {
 				"id":        f.NewId(),
 				"title":     l.Title,
 				"address":   l.Address,
-				"userId":    l.UserID,
+				"user":      f.Identity(),
 				"createdAt": f.Now(),
 			},
 		},
@@ -37,6 +37,7 @@ func (l *Link) Save(userKey string) error {
 	} else {
 		// Update the model
 		l.ID = link.ID
+		l.User = link.User
 	}
 
 	return nil
@@ -62,7 +63,7 @@ func (l *Link) GetById(id string) error {
 	l.Title = link.Title
 	l.Address = link.Address
 	l.CreatedAt = link.CreatedAt
-	l.UserID = link.UserID
+	l.User = link.User
 
 	return nil
 }
@@ -102,13 +103,12 @@ func (l *Link) DeleteById(id, userKey string) error {
 	return nil
 }
 
-func NewLinkModel(title, address, userId string) *Link {
+func NewLinkModel(title, address string) *Link {
 	link := Link{
 		ID:        f.NewId().String(),
 		Title:     title,
 		Address:   address,
 		CreatedAt: time.Now(),
-		UserID:    userId,
 	}
 
 	return &link

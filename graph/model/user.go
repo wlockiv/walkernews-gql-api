@@ -40,6 +40,21 @@ func (u *User) Save(password string) error {
 	return nil
 }
 
+func (u *User) GetByRefV(refV f.RefV) (*User, error) {
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
+	res, err := client.Query(f.Get(refV))
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (u *User) GetById(id string) (*User, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
