@@ -3,6 +3,7 @@ package user
 import (
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
+	"github.com/wlockiv/walkernews/internal/errors"
 	"os"
 )
 
@@ -107,11 +108,13 @@ func GetCurrent(userKey string) (*model.User, error) {
 	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(f.Get(f.Identity()))
 	if err != nil {
+		err = errors.NewDBError("Identity", err)
 		return nil, err
 	}
 
 	var user *model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
+		err := errors.NewUnmarshallError("User", err)
 		return nil, err
 	}
 

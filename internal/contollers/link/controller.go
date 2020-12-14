@@ -4,6 +4,7 @@ import (
 	"errors"
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
+	internalErr "github.com/wlockiv/walkernews/internal/errors"
 	"os"
 )
 
@@ -80,15 +81,17 @@ func DeleteById(id, userKey string) error {
 		),
 	)
 	if err != nil {
+		err = internalErr.NewDBError("DeleteById", err)
 		return err
 	}
 
 	var links []*model.Link
 	if err := res.At(f.ObjKey("data")).Get(&links); err != nil {
+		err = internalErr.NewUnmarshallError("deleted link", err)
 		return err
 	} else if len(links) == 0 {
-		err := errors.New("a link with the provided id could not be found")
-		return err
+		err := errors.New("link not found")
+		return internalErr.NewDBError("DeleteById", err)
 	}
 
 	return nil

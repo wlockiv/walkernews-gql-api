@@ -11,6 +11,7 @@ import (
 	"github.com/wlockiv/walkernews/internal/auth"
 	linkCtrl "github.com/wlockiv/walkernews/internal/contollers/link"
 	userCtrl "github.com/wlockiv/walkernews/internal/contollers/user"
+	internalErr "github.com/wlockiv/walkernews/internal/errors"
 	"github.com/wlockiv/walkernews/pkg/jwt"
 )
 
@@ -24,7 +25,11 @@ func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, 
 }
 
 func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error) {
-	authCtx := auth.ForContext(ctx)
+	authCtx, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if authCtx.UserKey == "" {
 		return nil, errors.New("not authorized")
 	}
@@ -38,8 +43,12 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 }
 
 func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (string, error) {
-	authCtx := auth.ForContext(ctx)
-	err := linkCtrl.DeleteById(id, authCtx.UserKey)
+	authCtx, err := auth.ForContext(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	err = linkCtrl.DeleteById(id, authCtx.UserKey)
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +103,11 @@ func (r *queryResolver) Link(ctx context.Context, id string) (*model.Link, error
 }
 
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	authCtx := auth.ForContext(ctx)
+	authCtx, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, internalErr.NewAuthError(err)
+	}
+
 	usr, err := userCtrl.GetCurrent(authCtx.UserKey)
 	if err != nil {
 		return nil, err

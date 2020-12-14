@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/pkg/jwt"
 	"net/http"
@@ -23,7 +24,7 @@ func Middleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
 
-			// Allow authenticated users in
+			// Allow unauthenticated users in
 			if header == "" {
 				next.ServeHTTP(w, r)
 				return
@@ -34,26 +35,9 @@ func Middleware() func(http.Handler) http.Handler {
 			claims, err := jwt.ParseToken(tokenStr)
 			if err != nil {
 				http.Error(w, "Invalid token", http.StatusForbidden)
+				//next.ServeHTTP(w, r)
 				return
 			}
-
-			//	create user and check if user exists
-			//users, err := controllers.GetUserTable()
-			//if err != nil {
-			//	next.ServeHTTP(w, r)
-			//	return
-			//}
-
-			//result, err := users.GetById(userId)
-			//if err != nil {
-			//	next.ServeHTTP(w, r)
-			//	return
-			//}
-
-			//user := &controllers.User{
-			//	ID:       userId,
-			//	Username: result.Username,
-			//}
 
 			userCtx := UserCtx{
 				User: &model.User{
@@ -73,7 +57,11 @@ func Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func ForContext(ctx context.Context) *UserCtx {
-	raw := ctx.Value(userCtxKey).(*UserCtx)
-	return raw
+func ForContext(ctx context.Context) (*UserCtx, error) {
+	raw, ok := ctx.Value(userCtxKey).(*UserCtx)
+	if !ok {
+		err := errors.New("invalid token")
+		return nil, err
+	}
+	return raw, nil
 }
