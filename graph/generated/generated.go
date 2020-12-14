@@ -78,7 +78,7 @@ type LinkResolver interface {
 }
 type MutationResolver interface {
 	CreateLink(ctx context.Context, input model.NewLink) (*model.Link, error)
-	DeleteLink(ctx context.Context, id string) (string, error)
+	DeleteLink(ctx context.Context, id string) (*model.Link, error)
 	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
 	Login(ctx context.Context, input model.Login) (string, error)
 }
@@ -340,7 +340,7 @@ input Login {
 
 type Mutation {
     createLink(input: NewLink!): Link!
-    deleteLink(id: String!): ID!
+    deleteLink(id: String!): Link!
     createUser(input: NewUser!): User!
     login(input: Login!): String!
 }
@@ -732,9 +732,9 @@ func (ec *executionContext) _Mutation_deleteLink(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.Link)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNLink2ᚖgithubᚗcomᚋwlockivᚋwalkernewsᚋgraphᚋmodelᚐLink(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {

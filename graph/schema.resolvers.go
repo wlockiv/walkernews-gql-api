@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"errors"
+
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/auth"
@@ -42,18 +43,18 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	return link, nil
 }
 
-func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (string, error) {
+func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (*model.Link, error) {
 	authCtx, err := auth.ForContext(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	err = linkCtrl.DeleteById(id, authCtx.UserKey)
+	link, err := linkCtrl.DeleteById(id, authCtx.UserKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return id, nil
+	return link, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {

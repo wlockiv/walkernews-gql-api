@@ -1,7 +1,6 @@
 package link
 
 import (
-	"errors"
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
 	internalErr "github.com/wlockiv/walkernews/internal/errors"
@@ -22,12 +21,13 @@ func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 		},
 	))
 	if err != nil {
-		return nil, err
+		return nil, internalErr.NewDBError("(Link) Create", err)
+
 	}
 
 	var link *model.Link
 	if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
-		return nil, err
+		return nil, internalErr.NewUnmarshallError("link response from DB", err)
 	}
 
 	return link, nil
@@ -41,12 +41,12 @@ func GetById(id string) (*model.Link, error) {
 		),
 	)
 	if err != nil {
-		return nil, err
+		return nil, internalErr.NewDBError("(Link) GetById", err)
 	}
 
 	var link *model.Link
 	if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
-		return nil, err
+		return nil, internalErr.NewUnmarshallError("link response from DB", err)
 	}
 
 	return link, nil
@@ -61,38 +61,36 @@ func GetAll() ([]*model.Link, error) {
 		),
 	)
 	if err != nil {
-		panic(err)
+		return nil, internalErr.NewDBError("(Link) GetAll", err)
 	}
 
 	var links []*model.Link
 	if err := res.At(f.ObjKey("data")).Get(&links); err != nil {
-		panic(err)
+		return nil, internalErr.NewUnmarshallError("list of link responses from DB", err)
 	}
 
 	return links, nil
 }
 
-func DeleteById(id, userKey string) error {
+func DeleteById(id, userKey string) (*model.Link, error) {
 	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(
-		f.Map(
-			f.Paginate(f.MatchTerm("link_ref_by_id", id)),
-			f.Lambda("LINK_REF", f.Select("data", f.Delete(f.Var("LINK_REF")))),
+		f.Let().Bind(
+			"linkRef", f.Select("ref", f.Get(f.MatchTerm(f.Index("link_ref_by_id"), id))),
+		).In(
+			f.Select("data", f.Delete(f.Var("linkRef"))),
 		),
 	)
 	if err != nil {
 		err = internalErr.NewDBError("DeleteById", err)
-		return err
+		return nil, err
 	}
 
-	var links []*model.Link
-	if err := res.At(f.ObjKey("data")).Get(&links); err != nil {
+	var link *model.Link
+	if err := res.Get(&link); err != nil {
 		err = internalErr.NewUnmarshallError("deleted link", err)
-		return err
-	} else if len(links) == 0 {
-		err := errors.New("link not found")
-		return internalErr.NewDBError("DeleteById", err)
+		return nil, err
 	}
 
-	return nil
+	return link, nil
 }
