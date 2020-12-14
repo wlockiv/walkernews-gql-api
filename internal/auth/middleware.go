@@ -2,10 +2,10 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/pkg/jwt"
 	"net/http"
+	"os"
 )
 
 type contextKey struct {
@@ -58,10 +58,15 @@ func Middleware() func(http.Handler) http.Handler {
 }
 
 func ForContext(ctx context.Context) (*UserCtx, error) {
-	raw, ok := ctx.Value(userCtxKey).(*UserCtx)
+	userCtx, ok := ctx.Value(userCtxKey).(*UserCtx)
 	if !ok {
-		err := errors.New("invalid token")
-		return nil, err
+		//err := errors.New("unauthorized")
+		clientCtx := UserCtx{
+			User:    nil,
+			UserKey: os.Getenv("FDB_SERVER_CLIENT_KEY"),
+		}
+
+		return &clientCtx, nil
 	}
-	return raw, nil
+	return userCtx, nil
 }

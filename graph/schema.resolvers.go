@@ -29,6 +29,9 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	authCtx, err := auth.ForContext(ctx)
 	if err != nil {
 		return nil, err
+	} else if authCtx.User == nil {
+
+		return nil, internalErr.NewAuthError(errors.New("must be logged in to create a link"))
 	}
 
 	if authCtx.UserKey == "" {

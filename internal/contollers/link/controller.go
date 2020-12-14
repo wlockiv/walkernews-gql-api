@@ -21,8 +21,8 @@ func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 		},
 	))
 	if err != nil {
-		return nil, internalErr.NewDBError("(Link) Create", err)
 
+		return nil, internalErr.NewDBError("(Link) Create", err)
 	}
 
 	var link *model.Link
