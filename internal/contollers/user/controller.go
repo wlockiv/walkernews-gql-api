@@ -3,7 +3,7 @@ package user
 import (
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
-	"github.com/wlockiv/walkernews/internal/errors"
+	internalErrors "github.com/wlockiv/walkernews/internal/errors"
 	"os"
 )
 
@@ -20,12 +20,12 @@ func Create(newUser model.NewUser) (*model.User, error) {
 		},
 	))
 	if err != nil {
-		return nil, err
+		return nil, internalErrors.NewDBError("(User) Create", err)
 	}
 
 	var user model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
-		return nil, err
+		return nil, internalErrors.NewUnmarshallError("user", err)
 	}
 
 	return &user, nil
@@ -35,12 +35,12 @@ func GetByRefV(refV f.RefV) (*model.User, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(f.Get(refV))
 	if err != nil {
-		return nil, err
+		return nil, internalErrors.NewDBError("(User) GetByRef", err)
 	}
 
 	var user model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
-		return nil, err
+		return nil, internalErrors.NewUnmarshallError("user", err)
 	}
 
 	return &user, nil
@@ -54,12 +54,12 @@ func GetById(id string) (*model.User, error) {
 		),
 	)
 	if err != nil {
-		return nil, err
+		return nil, internalErrors.NewDBError("(User) GetById", err)
 	}
 
 	var user model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
-		return nil, err
+		return nil, internalErrors.NewUnmarshallError("user", err)
 	}
 
 	return &user, nil
@@ -73,12 +73,12 @@ func GetByEmail(email string) (*model.User, error) {
 		),
 	)
 	if err != nil {
-		return nil, err
+		return nil, internalErrors.NewDBError("(User) GetByEmail", err)
 	}
 
 	var user model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
-		return nil, err
+		return nil, internalErrors.NewUnmarshallError("user", err)
 	}
 
 	return &user, nil
@@ -93,12 +93,12 @@ func GetUserKey(email, password string) (string, error) {
 		),
 	)
 	if err != nil {
-		return "", err
+		return "", internalErrors.NewDBError("Login", err)
 	}
 
 	var token string
 	if err := res.At(f.ObjKey("secret")).Get(&token); err != nil {
-		return "", err
+		return "", internalErrors.NewUnmarshallError("fdb token", err)
 	}
 
 	return token, nil
@@ -108,13 +108,13 @@ func GetCurrent(userKey string) (*model.User, error) {
 	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(f.Get(f.Identity()))
 	if err != nil {
-		err = errors.NewDBError("Identity", err)
+		err = internalErrors.NewDBError("Identity", err)
 		return nil, err
 	}
 
 	var user *model.User
 	if err := res.At(f.ObjKey("data")).Get(&user); err != nil {
-		err := errors.NewUnmarshallError("User", err)
+		err := internalErrors.NewUnmarshallError("User", err)
 		return nil, err
 	}
 

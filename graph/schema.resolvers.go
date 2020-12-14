@@ -30,7 +30,6 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	if err != nil {
 		return nil, err
 	} else if authCtx.User == nil {
-
 		return nil, internalErr.NewAuthError(errors.New("must be logged in to create a link"))
 	}
 
@@ -50,6 +49,9 @@ func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (*model.Li
 	authCtx, err := auth.ForContext(ctx)
 	if err != nil {
 		return nil, err
+	} else if authCtx.User == nil {
+		notLoggedInErr := errors.New("must be logged in to delete a link")
+		return nil, internalErr.NewAuthError(notLoggedInErr)
 	}
 
 	link, err := linkCtrl.DeleteById(id, authCtx.UserKey)
@@ -89,6 +91,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
+
 	links, err := linkCtrl.GetAll()
 	if err != nil {
 		return nil, err
@@ -110,6 +113,9 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
 	authCtx, err := auth.ForContext(ctx)
 	if err != nil {
 		return nil, internalErr.NewAuthError(err)
+	} else if authCtx.User == nil {
+		notLoggedInErr := errors.New("no user currently logged in")
+		return nil, internalErr.NewAuthError(notLoggedInErr)
 	}
 
 	usr, err := userCtrl.GetCurrent(authCtx.UserKey)

@@ -60,7 +60,7 @@ func Middleware() func(http.Handler) http.Handler {
 func ForContext(ctx context.Context) (*UserCtx, error) {
 	userCtx, ok := ctx.Value(userCtxKey).(*UserCtx)
 	if !ok {
-		//err := errors.New("unauthorized")
+		// Return the basic client if no token
 		clientCtx := UserCtx{
 			User:    nil,
 			UserKey: os.Getenv("FDB_SERVER_CLIENT_KEY"),

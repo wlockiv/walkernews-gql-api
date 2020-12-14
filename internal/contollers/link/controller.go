@@ -21,13 +21,12 @@ func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 		},
 	))
 	if err != nil {
-
 		return nil, internalErr.NewDBError("(Link) Create", err)
 	}
 
 	var link *model.Link
 	if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
-		return nil, internalErr.NewUnmarshallError("link response from DB", err)
+		return nil, internalErr.NewUnmarshallError("link", err)
 	}
 
 	return link, nil
@@ -46,7 +45,7 @@ func GetById(id string) (*model.Link, error) {
 
 	var link *model.Link
 	if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
-		return nil, internalErr.NewUnmarshallError("link response from DB", err)
+		return nil, internalErr.NewUnmarshallError("link", err)
 	}
 
 	return link, nil
@@ -66,7 +65,7 @@ func GetAll() ([]*model.Link, error) {
 
 	var links []*model.Link
 	if err := res.At(f.ObjKey("data")).Get(&links); err != nil {
-		return nil, internalErr.NewUnmarshallError("list of link responses from DB", err)
+		return nil, internalErr.NewUnmarshallError("[]link", err)
 	}
 
 	return links, nil
@@ -82,14 +81,12 @@ func DeleteById(id, userKey string) (*model.Link, error) {
 		),
 	)
 	if err != nil {
-		err = internalErr.NewDBError("DeleteById", err)
-		return nil, err
+		return nil, internalErr.NewDBError("DeleteById", err)
 	}
 
 	var link *model.Link
 	if err := res.Get(&link); err != nil {
-		err = internalErr.NewUnmarshallError("deleted link", err)
-		return nil, err
+		return nil, internalErr.NewUnmarshallError("link", err)
 	}
 
 	return link, nil
