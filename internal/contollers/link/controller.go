@@ -1,6 +1,7 @@
 package link
 
 import (
+	"errors"
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
 	"os"
@@ -9,7 +10,7 @@ import (
 func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 	client := f.NewFaunaClient(userKey)
 	res, err := client.Query(f.Create(
-		f.Collection("Link"), f.Obj{
+		f.Collection("links"), f.Obj{
 			"data": f.Obj{
 				"id":        f.NewId(),
 				"title":     newLink.Title,
@@ -72,13 +73,21 @@ func GetAll() ([]*model.Link, error) {
 
 func DeleteById(id, userKey string) error {
 	client := f.NewFaunaClient(userKey)
-	_, err := client.Query(
+	res, err := client.Query(
 		f.Map(
 			f.Paginate(f.MatchTerm("link_ref_by_id", id)),
-			f.Lambda("LINK_REF", f.Delete(f.Var("LINK_REF"))),
+			f.Lambda("LINK_REF", f.Select("data", f.Delete(f.Var("LINK_REF")))),
 		),
 	)
 	if err != nil {
+		return err
+	}
+
+	var links []*model.Link
+	if err := res.At(f.ObjKey("data")).Get(&links); err != nil {
+		return err
+	} else if len(links) == 0 {
+		err := errors.New("a link with the provided id could not be found")
 		return err
 	}
 

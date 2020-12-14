@@ -68,7 +68,7 @@ func GetByEmail(email string) (*model.User, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
 		f.Get(
-			f.MatchTerm(f.Index("users_by_email"), email),
+			f.MatchTerm(f.Index("users_by_email"), f.LowerCase(email)),
 		),
 	)
 	if err != nil {
@@ -87,7 +87,7 @@ func GetUserKey(email, password string) (string, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
 		f.Login(
-			f.MatchTerm(f.Index("users_by_email"), email),
+			f.MatchTerm(f.Index("users_by_email"), f.LowerCase(email)),
 			f.Obj{"password": password},
 		),
 	)
