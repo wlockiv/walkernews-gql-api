@@ -8,31 +8,27 @@ import (
 	"os"
 )
 
-func GetByRefV(refV f.RefV, postType model.PostType) (model.Post, error) {
+func GetByRefV(refV f.RefV) (model.Post, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(f.Get(refV))
 	if err != nil {
 		return nil, internalErrors.NewDBError("(Comment) GetByRefV", err)
 	}
 
-	if postType.String() == model.PostTypeComment.String() {
+	if refV.Collection.ID == "comments" {
 		var comment *model.Comment
 		if err := res.At(f.ObjKey("data")).Get(&comment); err != nil {
-			return nil, internalErrors.NewUnmarshallError("comment", err)
-		} else {
-			return comment, nil
+			return nil, internalErrors.NewUnmarshallError("post/comment", err)
 		}
-	}
-
-	if postType.String() == model.PostTypeLink.String() {
+		return comment, nil
+	} else if refV.Collection.ID == "links" {
 		var link *model.Link
 		if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
-			return nil, internalErrors.NewUnmarshallError("link", err)
-		} else {
-			return link, nil
+			return nil, internalErrors.NewUnmarshallError("post/link", err)
 		}
+		return link, nil
 	}
 
-	err = errors.New("(Post) GetByRefV: must include a valid PostType")
+	err = errors.New("(Post) GetByRefV: could not find collection '" + refV.Collection.ID + "'")
 	return nil, internalErrors.NewBaseError(err)
 }

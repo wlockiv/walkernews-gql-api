@@ -60,7 +60,6 @@ input Login {
 
 input NewComment {
     content: String!
-    linkId: ID!
     parentId: ID
     parentType: PostType!
     # user: ID! <- To be handled by jwt

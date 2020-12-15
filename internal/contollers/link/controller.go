@@ -9,17 +9,9 @@ import (
 
 func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 	client := f.NewFaunaClient(userKey)
-	res, err := client.Query(f.Create(
-		f.Collection("links"), f.Obj{
-			"data": f.Obj{
-				"id":        f.NewId(),
-				"title":     newLink.Title,
-				"address":   newLink.Address,
-				"user":      f.Identity(),
-				"createdAt": f.Now(),
-			},
-		},
-	))
+	res, err := client.Query(
+		f.Call("create_link", f.Arr{newLink.Title, newLink.Address}),
+	)
 	if err != nil {
 		return nil, internalErr.NewDBError("(Link) Create", err)
 	}

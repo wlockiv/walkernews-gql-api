@@ -432,7 +432,6 @@ input Login {
 
 input NewComment {
     content: String!
-    linkId: ID!
     parentId: ID
     parentType: PostType!
     # user: ID! <- To be handled by jwt
@@ -2602,14 +2601,6 @@ func (ec *executionContext) unmarshalInputNewComment(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			it.Content, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "linkId":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("linkId"))
-			it.LinkID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

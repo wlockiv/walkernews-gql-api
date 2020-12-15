@@ -19,7 +19,6 @@ type Login struct {
 
 type NewComment struct {
 	Content    string   `json:"content"`
-	LinkID     string   `json:"linkId"`
 	ParentID   *string  `json:"parentId"`
 	ParentType PostType `json:"parentType"`
 }

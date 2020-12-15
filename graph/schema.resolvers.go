@@ -6,6 +6,8 @@ package graph
 import (
 	"context"
 	"errors"
+	postCtrl "github.com/wlockiv/walkernews/internal/contollers/post"
+
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/auth"
@@ -17,7 +19,7 @@ import (
 )
 
 func (r *commentResolver) Parent(ctx context.Context, obj *model.Comment) (model.Post, error) {
-	comment, err := commentCtrl.GetByRefV(obj.Parent)
+	comment, err := postCtrl.GetByRefV(obj.Parent)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +37,8 @@ func (r *commentResolver) User(ctx context.Context, obj *model.Comment) (*model.
 }
 
 func (r *commentResolver) Comments(ctx context.Context, obj *model.Comment) ([]*model.Comment, error) {
-	comments, err := commentCtrl.GetByParentCommentId(obj.ID)
+	//comments, err := commentCtrl.GetByParentCommentId(obj.ID)
+	comments, err := commentCtrl.GetByParentIdAndType(obj.ID, model.PostTypeComment)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +56,8 @@ func (r *linkResolver) User(ctx context.Context, obj *model.Link) (*model.User, 
 }
 
 func (r *linkResolver) Comments(ctx context.Context, obj *model.Link) ([]*model.Comment, error) {
-	comments, err := commentCtrl.GetByParentLinkId(obj.ID)
+	//comments, err := commentCtrl.GetByParentLinkId(obj.ID)
+	comments, err := commentCtrl.GetByParentIdAndType(obj.ID, model.PostTypeLink)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +131,6 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 }
 
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*model.Comment, error) {
-	// TODO: Add conditional logic for PostType
 	authCtx, err := auth.ForContext(ctx)
 	if err != nil {
 		return nil, internalErr.NewAuthError(err)
@@ -136,6 +139,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 		return nil, internalErr.NewAuthError(notLoggedInErr)
 	}
 
+	// TODO: Add conditional logic for PostType
 	comment, err := commentCtrl.Create(input, authCtx.UserKey)
 	if err != nil {
 		return nil, err
@@ -195,18 +199,3 @@ type commentResolver struct{ *Resolver }
 type linkResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *commentResolver) Link(ctx context.Context, obj *model.Comment) (*model.Link, error) {
-	link, err := linkCtrl.GetByRefV(obj.Link)
-	if err != nil {
-		return nil, err
-	}
-
-	return link, nil
-}
