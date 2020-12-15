@@ -8,17 +8,9 @@ import (
 )
 
 func Create(newUser model.NewUser) (*model.User, error) {
-	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
-	res, err := client.Query(f.Create(
-		f.Collection("users"), f.Obj{
-			"credentials": f.Obj{"password": newUser.Password},
-			"data": f.Obj{
-				"id":       f.NewId(),
-				"email":    f.LowerCase(newUser.Email),
-				"username": newUser.Username,
-			},
-		},
-	))
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_CLIENT_KEY"))
+	res, err := client.Query(f.Call("create_user",
+		f.Arr{newUser.Email, newUser.Username, newUser.Password}))
 	if err != nil {
 		return nil, internalErrors.NewDBError("(User) Create", err)
 	}

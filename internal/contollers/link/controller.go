@@ -27,10 +27,7 @@ func Create(newLink model.NewLink, userKey string) (*model.Link, error) {
 func GetById(id string) (*model.Link, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
-		f.Get(
-			f.MatchTerm(f.Index("link_by_id"), id),
-		),
-	)
+		f.Get(f.MatchTerm(f.Index("link_by_id"), id)))
 	if err != nil {
 		return nil, internalErr.NewDBError("(Link) GetById", err)
 	}
@@ -59,7 +56,7 @@ func GetByRefV(linkRef f.RefV) (*model.Link, error) {
 }
 
 func GetAll() ([]*model.Link, error) {
-	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_CLIENT_KEY"))
 	res, err := client.Query(
 		f.Map(
 			f.Paginate(f.Match(f.Index("links_sorted_by_createdAt_desc"))),
