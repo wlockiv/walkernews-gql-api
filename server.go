@@ -16,6 +16,7 @@ import (
 
 const defaultPort = "8080"
 
+// TODO: Implement comments for links and parent comments
 // TODO: Continue building out and applying internal errors package
 // TODO: Add update for links
 // TODO: Add permissions for Updating account

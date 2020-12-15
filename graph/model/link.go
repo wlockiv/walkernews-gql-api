@@ -12,3 +12,5 @@ type Link struct {
 	CreatedAt time.Time `fauna:"createdAt"`
 	User      f.RefV    `fauna:"user"`
 }
+
+func (l *Link) IsPost() {}

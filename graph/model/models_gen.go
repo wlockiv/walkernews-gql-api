@@ -2,9 +2,26 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type Post interface {
+	IsPost()
+}
+
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type NewComment struct {
+	Content    string   `json:"content"`
+	LinkID     string   `json:"linkId"`
+	ParentID   *string  `json:"parentId"`
+	ParentType PostType `json:"parentType"`
 }
 
 type NewLink struct {
@@ -20,4 +37,45 @@ type NewUser struct {
 
 type RefreshToken struct {
 	Token string `json:"token"`
+}
+
+type PostType string
+
+const (
+	PostTypeLink    PostType = "Link"
+	PostTypeComment PostType = "Comment"
+)
+
+var AllPostType = []PostType{
+	PostTypeLink,
+	PostTypeComment,
+}
+
+func (e PostType) IsValid() bool {
+	switch e {
+	case PostTypeLink, PostTypeComment:
+		return true
+	}
+	return false
+}
+
+func (e PostType) String() string {
+	return string(e)
+}
+
+func (e *PostType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PostType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PostType", str)
+	}
+	return nil
+}
+
+func (e PostType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

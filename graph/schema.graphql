@@ -1,10 +1,29 @@
-type Link {
+interface Post {
+    id: ID!
+}
+
+enum PostType {
+    Link
+    Comment
+}
+
+type Link implements Post{
     id: ID!
     title: String!
     address: String!
     createdAt: Time
     user: User!
+    comments: [Comment!]
 }
+
+type Comment implements Post {
+    id: ID!
+    content: String!
+    parent: Post!
+    user: User!
+    comments: [Comment!]
+}
+
 
 type User {
     id: ID!
@@ -39,11 +58,25 @@ input Login {
     password: String!
 }
 
+input NewComment {
+    content: String!
+    linkId: ID!
+    parentId: ID
+    parentType: PostType!
+    # user: ID! <- To be handled by jwt
+}
+
 type Mutation {
+    # LINK
     createLink(input: NewLink!): Link!
     deleteLink(id: String!): Link!
+
+    # USER
     createUser(input: NewUser!): User!
     login(input: Login!): String!
+
+    # COMMENT
+    createComment(input: NewComment!): Comment!
 }
 
 scalar Time

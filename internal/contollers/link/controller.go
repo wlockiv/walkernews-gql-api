@@ -51,6 +51,21 @@ func GetById(id string) (*model.Link, error) {
 	return link, nil
 }
 
+func GetByRefV(linkRef f.RefV) (*model.Link, error) {
+	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_CLIENT_KEY"))
+	res, err := client.Query(f.Get(linkRef))
+	if err != nil {
+		return nil, internalErr.NewDBError("(Link) GetByRefV", err)
+	}
+
+	var link *model.Link
+	if err := res.At(f.ObjKey("data")).Get(&link); err != nil {
+		return nil, internalErr.NewUnmarshallError("link", err)
+	}
+
+	return link, nil
+}
+
 func GetAll() ([]*model.Link, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
