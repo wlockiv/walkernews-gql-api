@@ -17,7 +17,7 @@ import (
 const defaultPort = "8080"
 
 // TODO: Continue building out and applying internal errors package
-// TODO: Add update for links
+// TODO: Add update/delete for links
 // TODO: Add permissions for Updating account
 func main() {
 	err := godotenv.Load()
