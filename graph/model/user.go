@@ -1,7 +1,7 @@
 package model
 
 type User struct {
-	ID       string `fauna:"id"`
-	Email    string `fauna:"email"`
-	Username string `fauna:"username"`
+	ID     string `fauna:"id"`
+	Email  string `fauna:"email"`
+	Handle string `fauna:"displayName"`
 }

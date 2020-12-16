@@ -29,7 +29,7 @@ type NewLink struct {
 }
 
 type NewUser struct {
-	Username string `json:"username"`
+	Handle   string `json:"handle"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

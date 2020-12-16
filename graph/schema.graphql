@@ -24,11 +24,10 @@ type Comment implements Post {
     comments: [Comment!]
 }
 
-
 type User {
     id: ID!
-    username: String!
     email: String!
+    handle: String!
 }
 
 type Query {
@@ -40,7 +39,7 @@ type Query {
 input NewLink {
     title: String!
     address: String!
-    #    userId: String! <- This is provided by jwt now
+    # userId: String! <- This is provided by jwt now
 }
 
 input RefreshToken {
@@ -48,7 +47,7 @@ input RefreshToken {
 }
 
 input NewUser {
-    username: String!
+    handle: String!
     email: String!
     password: String!
 }

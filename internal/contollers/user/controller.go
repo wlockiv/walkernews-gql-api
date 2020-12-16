@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	f "github.com/fauna/faunadb-go/v3/faunadb"
 	"github.com/wlockiv/walkernews/graph/model"
 	internalErrors "github.com/wlockiv/walkernews/internal/errors"
@@ -10,8 +11,9 @@ import (
 func Create(newUser model.NewUser) (*model.User, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_CLIENT_KEY"))
 	res, err := client.Query(f.Call("create_user",
-		f.Arr{newUser.Email, newUser.Username, newUser.Password}))
+		f.Arr{newUser.Email, newUser.Handle, newUser.Password}))
 	if err != nil {
+		err = errors.New("bad connection, or the username/email already exists")
 		return nil, internalErrors.NewDBError("(User) Create", err)
 	}
 
@@ -79,11 +81,8 @@ func GetByEmail(email string) (*model.User, error) {
 func GetUserKey(email, password string) (string, error) {
 	client := f.NewFaunaClient(os.Getenv("FDB_SERVER_KEY"))
 	res, err := client.Query(
-		f.Login(
-			f.MatchTerm(f.Index("users_by_email"), f.LowerCase(email)),
-			f.Obj{"password": password},
-		),
-	)
+		f.Login(f.MatchTerm(f.Index("users_by_email"), f.LowerCase(email)),
+			f.Obj{"password": password}))
 	if err != nil {
 		return "", internalErrors.NewDBError("Login", err)
 	}

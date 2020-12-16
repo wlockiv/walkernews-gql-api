@@ -6,13 +6,13 @@ package graph
 import (
 	"context"
 	"errors"
-	postCtrl "github.com/wlockiv/walkernews/internal/contollers/post"
 
 	"github.com/wlockiv/walkernews/graph/generated"
 	"github.com/wlockiv/walkernews/graph/model"
 	"github.com/wlockiv/walkernews/internal/auth"
 	commentCtrl "github.com/wlockiv/walkernews/internal/contollers/comment"
 	linkCtrl "github.com/wlockiv/walkernews/internal/contollers/link"
+	postCtrl "github.com/wlockiv/walkernews/internal/contollers/post"
 	userCtrl "github.com/wlockiv/walkernews/internal/contollers/user"
 	internalErr "github.com/wlockiv/walkernews/internal/errors"
 	"github.com/wlockiv/walkernews/pkg/jwt"
